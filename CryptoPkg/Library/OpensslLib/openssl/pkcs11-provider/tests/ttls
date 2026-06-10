@@ -1,0 +1,179 @@
+#!/bin/bash -e
+# Copyright (C) 2023 Simo Sorce <simo@redhat.com>
+# SPDX-License-Identifier: Apache-2.0
+
+source "${TESTSSRCDIR}/helpers.sh"
+
+title PARA "Test SSL_CTX creation"
+$CHECKER "${TESTBLDDIR}/tlsctx"
+
+title PARA "Test setting cert/keys on TLS Context"
+$CHECKER "${TESTBLDDIR}/tlssetkey" "${ECCRTURI}" "${ECPRIURI}"
+
+if [ -n "$ECBASE2URI" ]; then
+    title PARA "Test setting cert/keys on TLS Context w/o pub key"
+    $CHECKER "${TESTBLDDIR}/tlssetkey" "${ECCRT2URI}" "${ECPRI2URI}"
+fi
+
+title PARA "Test an actual TLS connection"
+
+rm -f "${TMPPDIR}/s_server_output"
+rm -f "${TMPPDIR}/s_server_ready"
+mkfifo "${TMPPDIR}/s_server_ready"
+
+SERVER_PID=-1
+# Make sure we terminate programs if test fails in the middle
+# shellcheck disable=SC2317  # Shellcheck for some reason does not follow trap
+wait_for_server_at_exit() {
+    wait "$1" || :
+    echo "Server output:"
+    cat "${TMPPDIR}/s_server_output"
+}
+trap 'wait_for_server_at_exit $SERVER_PID;' EXIT
+
+PORT=23456
+
+run_test() {
+    KEY="$1"
+    CERT="$2"
+    SRV_ARGS=$3
+    CLNT_ARGS=$4
+
+    export PKCS11_PROVIDER_DEBUG="file:${TMPPDIR}/p11prov-debug-tls-server.log"
+    expect -c "spawn $CHECKER openssl s_server $PROPQ -accept \"${PORT}\" -naccept 1 -key \"${KEY}\" -cert \"${CERT}\" $SRV_ARGS;
+        set timeout 10;
+        expect {
+            \"ACCEPT\" {};
+            eof { exit 2; }
+            timeout { exit 5; }
+            default {
+                send \" NO ACCEPT \n\";
+                exit 1;
+            };
+        }
+        set server_ready [open \"${TMPPDIR}/s_server_ready\" w+];
+        puts \$server_ready \"READY\n\";
+        close \$server_ready;
+        expect {
+            \"END SSL SESSION PARAMETERS\" {};
+            eof { exit 2; }
+            timeout { exit 5; }
+            default {
+                send \" NO SESSION PARAMETERS \n\";
+                exit 1;
+            };
+        }
+        send \" TLS SUCCESSFUL \n\"
+        send \"Q\n\"
+        expect {
+            eof {exit 0;};
+            timeout { exit 5; }
+            default {
+                send \" NO EOF \n\";
+                exit 1;
+            };
+        }" &> "${TMPPDIR}/s_server_output" &
+    SERVER_PID=$!
+
+    read -r < "${TMPPDIR}/s_server_ready"
+
+    export PKCS11_PROVIDER_DEBUG="file:${TMPPDIR}/p11prov-debug-tls-client.log"
+    expect -c "spawn $CHECKER openssl s_client $PROPQ -connect \"localhost:${PORT}\" -CAfile \"${CACRT}\" $CLNT_ARGS;
+        set timeout 10;
+        expect {
+            \" TLS SUCCESSFUL \" {};
+            eof { exit 2; }
+            timeout { exit 5; }
+            default {
+                send \" NO TLS SUCCESSFUL MESSAGE \n\";
+                exit 1;
+            };
+        }
+        expect {
+            eof {exit 0;};
+            timeout { exit 5; }
+            default {
+                send \" NO EOF \n\";
+                exit 1;
+            };
+        }" || (wait_for_server_at_exit $SERVER_PID; exit 1; )
+
+    wait_for_server_at_exit $SERVER_PID
+}
+
+run_tests() {
+
+    title PARA "Run sanity test with default values (RSA)"
+    run_test "$PRIURI" "$CRTURI"
+
+    if [[ -n "$RSAPSSPRIURI" ]]; then
+        title PARA "Run sanity test with default values (RSA-PSS)"
+        selfsign_cert "${RSAPSSPRIURI}" "${TMPPDIR}/rsapss-default.pem" \
+            "RSA-PSS_Default_Digest" \
+            "-sigopt rsa_padding_mode:pss"
+
+        run_test "$RSAPSSPRIURI" "${TMPPDIR}/rsapss-default.pem"
+    fi
+
+    if [[ -n "$RSAPSS2PRIURI" ]]; then
+        title PARA "Run sanity test with RSA-PSS and SHA256"
+        selfsign_cert "${RSAPSS2PRIURI}" "${TMPPDIR}/rsapss-sha256.pem" \
+            "RSA-PSS_SHA256_Digest" \
+            "-sigopt rsa_padding_mode:pss" \
+            "-sigopt digest:sha256" \
+            "-sigopt rsa_pss_saltlen:-1"
+
+        run_test "$RSAPSS2PRIURI" "${TMPPDIR}/rsapss-sha256.pem"
+    fi
+
+    title PARA "Run sanity test with default values (ECDSA)"
+    run_test "$ECPRIURI" "$ECCRTURI"
+
+    if [[ -n "$EDBASEURI" ]]; then
+        title PARA "Run sanity test with default values (Ed25519)"
+        run_test "$EDPRIURI" "$EDCRTURI"
+    fi
+
+    if [[ -n "$ED2BASEURI" ]]; then
+        title PARA "Run sanity test with default values (Ed448)"
+        run_test "$ED2PRIURI" "$ED2CRTURI"
+    fi
+
+    title PARA "Run test with TLS 1.2"
+    run_test "$PRIURI" "$CRTURI" "" "-tls1_2"
+
+    title PARA "Run test with explicit TLS 1.3"
+    run_test "$PRIURI" "$CRTURI" "" "-tls1_3"
+
+    title PARA "Run test with TLS 1.2 (ECDSA)"
+    run_test "$ECPRIURI" "$ECCRTURI" "-tls1_2" "-tls1_2"
+
+    title PARA "Run test with TLS 1.2 and ECDH"
+    run_test "$ECPRIURI" "$ECCRTURI" "" "-tls1_2 -cipher ECDHE-ECDSA-AES128-GCM-SHA256 -groups secp256r1"
+
+    title PARA "Run test with TLS 1.3 and specific suite"
+    run_test "$ECPRIURI" "$ECCRTURI" "" "-tls1_3 -ciphersuites TLS_AES_256_GCM_SHA384 -groups secp256r1"
+}
+
+title SECTION "TLS with key in provider"
+PROPQ=""
+run_tests
+title ENDSECTION
+
+title SECTION "Forcing the provider for all server operations"
+# We can not put this into the openssl.cnf directly, as it would be picked up by softhsm
+# causing infinite recursion when doing EdDSA key operations.
+PROPQ="-propquery \"?provider=pkcs11\""
+# Try again forcing all operations on the token
+# We need to disable digest operations as OpenSSL depends on context duplication working
+ORIG_OPENSSL_CONF=${OPENSSL_CONF}
+sed -e "s/^#pkcs11-module-block-operations/pkcs11-module-block-operations = digest/" \
+    "${OPENSSL_CONF}" > "${OPENSSL_CONF}.forcetoken"
+OPENSSL_CONF=${OPENSSL_CONF}.forcetoken
+
+run_tests
+
+OPENSSL_CONF=${ORIG_OPENSSL_CONF}
+title ENDSECTION
+
+exit 0;

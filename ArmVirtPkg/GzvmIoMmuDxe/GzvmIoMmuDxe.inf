@@ -1,0 +1,57 @@
+## @file
+#  GZVM IoMmu driver for DMA bounce buffers.
+#
+#  In GZVM protected VMs, protected guest RAM is inaccessible to the host.
+#  This driver provides EDKII_IOMMU_PROTOCOL so PCI DMA uses bounce
+#  buffers allocated from the shared DMA pool that both host and guest
+#  can access.
+#
+#  The shared DMA pool is discovered dynamically from the DTB's
+#  "restricted-dma-pool" reserved-memory node.
+#
+#  Copyright (c) 2026, Contributors. All rights reserved.
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = GzvmIoMmuDxe
+  FILE_GUID                      = A1B2C3D4-E5F6-4A5B-9C8D-7E6F5A4B3C2D
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = GzvmIoMmuDxeEntryPoint
+
+[Sources]
+  GzvmIoMmuDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ArmPkg/ArmPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  OvmfPkg/OvmfPkg.dec
+
+[LibraryClasses]
+  UefiDriverEntryPoint
+  UefiBootServicesTableLib
+  DxeServicesTableLib
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  FdtLib
+  HobLib
+  MemoryAllocationLib
+  PcdLib
+
+[Protocols]
+  gEdkiiIoMmuProtocolGuid        ## PRODUCES
+
+[Guids]
+  gFdtHobGuid                    ## CONSUMES
+
+[Pcd]
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+
+[Depex]
+  TRUE

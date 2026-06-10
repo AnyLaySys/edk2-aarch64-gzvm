@@ -1,0 +1,59 @@
+#/** @file
+#
+#  SMBIOS Table for the GZVM Virtual Machine platform
+#  Adapted for the GZVM QEMU virt platform.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x0001001A
+  BASE_NAME                      = SmbiosPlatformDxe
+  FILE_GUID                      = 8C2AC952-0920-443A-A7ED-DAF50764FA10
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = SmbiosPlatformDriverEntryPoint
+
+[Sources]
+  SmbiosPlatformDxe.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmVirtPkg/ArmVirtPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+
+[LibraryClasses]
+  ArmLib
+  ArmGenericTimerCounterLib
+  UefiBootServicesTableLib
+  MemoryAllocationLib
+  BaseMemoryLib
+  BaseLib
+  HobLib
+  UefiLib
+  UefiDriverEntryPoint
+  DebugLib
+  PrintLib
+
+[Guids]
+  gEfiGlobalVariableGuid
+  gArmVirtSystemMemorySizeGuid
+
+[Pcd]
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
+  gArmTokenSpaceGuid.PcdSystemMemorySize
+
+[FixedPcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareRevision
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString
+
+[Protocols]
+  gEfiSmbiosProtocolGuid                      # PROTOCOL ALWAYS_CONSUMED
+  gFdtClientProtocolGuid                      # PROTOCOL ALWAYS_CONSUMED
+
+[Depex]
+  gEfiSmbiosProtocolGuid
