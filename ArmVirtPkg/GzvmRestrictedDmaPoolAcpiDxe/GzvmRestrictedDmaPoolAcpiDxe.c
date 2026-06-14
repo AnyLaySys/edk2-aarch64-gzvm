@@ -62,10 +62,6 @@ GetRestrictedDmaPool (
     return EFI_NOT_FOUND;
   }
 
-  if (Len < sizeof (UINT64) * 2) {
-    return EFI_NOT_FOUND;
-  }
-
   Address = SwapBytes64 (((CONST UINT64 *)Prop)[0]);
   Size    = SwapBytes64 (((CONST UINT64 *)Prop)[1]);
 
@@ -170,5 +166,5 @@ GzvmRestrictedDmaPoolAcpiDxeEntryPoint (
     DEBUG ((DEBUG_ERROR, "GzvmRestrictedDmaPool: SSDT install failed %r\n", Status));
   }
 
-  return EFI_SUCCESS;
+  return Status;
 }

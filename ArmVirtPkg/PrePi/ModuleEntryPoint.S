@@ -72,7 +72,9 @@ ASM_FUNC(_ModuleEntryPoint)
 
   // Enable Floating Point. This needs to be done before entering C code, which
   // may use FP/SIMD registers.
+  mov   x19, x15            // save UART base (x19 callee-saved, preserved by C)
   bl    ArmEnableVFP
+  mov   x15, x19            // restore UART base
 
   // Print DTB pointer as hex nibbles to diagnose bad address
   mov   w16, #'c'
@@ -113,7 +115,9 @@ ASM_FUNC(_ModuleEntryPoint)
   str   w16, [x15]
 
   // Get ID of this CPU in Multicore system
+  mov   x19, x15            // save UART base
   bl    ASM_PFX(ArmReadMpidr)
+  mov   x15, x19            // restore UART base
   // Keep a copy of the MpId register value
   mov   x20, x0
 
@@ -189,7 +193,9 @@ _GetStackBase:
   //    x0 = MpId
   //    x1 = UefiMemoryBase
   //    x2 = StacksBase
+  mov   x19, x15            // save UART base
   bl    ASM_PFX(CEntryPoint)
+  mov   x15, x19            // restore UART base
 
 _NeverReturn:
   b _NeverReturn
@@ -317,7 +323,9 @@ ASM_PFX(DiscoverDramFromDt):
   adr   x1, PeCoffLoaderImageReadFromMemory
   add   x10, x27, #0x800000  // temp stack = FD base + 8 MB (well past DTB at +4MB)
   mov   sp, x10
+  mov   x19, x15            // save UART base
   bl    RelocatePeCoffImage
+  mov   x15, x19            // restore UART base
 
   //
   // Discover the memory size and offset from the DTB, and record in the
@@ -327,7 +335,9 @@ ASM_PFX(DiscoverDramFromDt):
   mov   x0, x28
   adr   x1, PcdGet64 (PcdSystemMemoryBase)
   adr   x2, PcdGet64 (PcdSystemMemorySize)
+  mov   x19, x15            // save UART base
   bl    FindMemnode
+  mov   x15, x19            // restore UART base
   cbz   x0, .Lout
 
   //
@@ -341,7 +351,9 @@ ASM_PFX(DiscoverDramFromDt):
 
   mov   x0, x27
   mov   x1, x28
+  mov   x19, x15            // save UART base
   bl    CopyFdt
+  mov   x15, x19            // restore UART base
 
 .Lout:
   ret    x29

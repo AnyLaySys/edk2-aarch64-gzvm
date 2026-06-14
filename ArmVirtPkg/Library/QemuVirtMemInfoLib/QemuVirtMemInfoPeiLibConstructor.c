@@ -86,8 +86,11 @@ QemuVirtMemInfoPeiLibConstructor (
 
   //
   // Make sure the start of DRAM matches our expectation
+  // Note: GZVM uses a patchable PcdSystemMemoryBase (set to 0 in DSC,
+  // updated at runtime by FindMemnode).  Read the *current* value
+  // instead of the build-time constant.
   //
-  ASSERT (FixedPcdGet64 (PcdSystemMemoryBase) == NewBase);
+  ASSERT (PcdGet64 (PcdSystemMemoryBase) == NewBase);
 
   //
   // GZVM: subtract the shared swiotlb/restricted-dma-pool region

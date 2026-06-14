@@ -11,15 +11,7 @@
 
 /*
  * GZVM: store the restricted-dma-pool shared DMA pool info.
- * Initialized to 1 (not 0) so they land in .data, NOT .bss.
- * BSS is cleared between FindMemnode (assembly) and C runtime,
- * which would zero these if they were in BSS.
- * The sentinel value 1 is overwritten by FindMemnode on success,
- * and checked as "!= 1" won't cause issues (PoolSize is always
- * page-aligned, never 1).
- */
-/*
- * Non-zero init forces placement in .data (not .bss).
+ * Non-zero init (0xDEAD) forces placement in .data (not .bss).
  * BSS is cleared between FindMemnode() (assembly) and C runtime,
  * which would zero BSS globals. These are set by FindMemnode()
  * when a restricted-dma-pool is found, then read by MemoryPeim

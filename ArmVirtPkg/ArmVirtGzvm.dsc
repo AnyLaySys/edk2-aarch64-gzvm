@@ -22,7 +22,7 @@
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
   FLASH_DEFINITION               = ArmVirtPkg/ArmVirtGzvm.fdf
-  POSTBUILD                      = mv Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/edk2-aarch64-gzvm.fd && :
+  POSTBUILD                      = mv -f Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/edk2-aarch64-gzvm.fd; mv -f Build/ArmVirtGzvm-AArch64/DEBUG_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/DEBUG_GCC5/FV/edk2-aarch64-gzvm.fd; mv -f Build/ArmVirtGzvm-AArch64/NOOPT_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/NOOPT_GCC5/FV/edk2-aarch64-gzvm.fd; true
 
   #
   # Defines for default states.  These can be changed on the command line.
@@ -62,17 +62,8 @@
   PlatformFvbLib|OvmfPkg/Library/EmuVariableFvbLib/EmuVariableFvbLib.inf
 
   #
-  # NS16550A serial @ 0x3F8.
-  # Override PL011-based DebugLib/SerialPortLib from ArmVirt.dsc.inc.
+  # ARM PL011 UART (FDT-discovered, matches QEMU virt machine)
   #
-!if $(TARGET) != RELEASE
-  DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-!endif
-  SerialPortLib|ArmVirtPkg/Library/PatchedSerialPortLib16550/PatchedSerialPortLib16550.inf
-  # PatchedSerialPortLib16550 depends on PciLib but we use MMIO, not PCI UART.
-  # Provide a minimal PciLib that satisfies the dependency.
-  PciLib|MdePkg/Library/BasePciLibPciExpress/BasePciLibPciExpress.inf
-  PciExpressLib|MdePkg/Library/BasePciExpressLib/BasePciExpressLib.inf
 
   # Virtio Support
   VirtioLib|OvmfPkg/Library/VirtioLib/VirtioLib.inf
@@ -107,35 +98,18 @@
   ArmMonitorLib|ArmVirtPkg/Library/ArmVirtMonitorLib/ArmVirtMonitorLib.inf
 
 [LibraryClasses.common.SEC]
-  # Override PL011 serial with NS16550A for all SEC/PrePi phases
-  SerialPortLib|ArmVirtPkg/Library/PatchedSerialPortLib16550/PatchedSerialPortLib16550.inf
   PciLib|MdePkg/Library/BasePciLibPciExpress/BasePciLibPciExpress.inf
   PciExpressLib|MdePkg/Library/BasePciExpressLib/BasePciExpressLib.inf
-!if $(TARGET) != RELEASE
-  DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-!endif
 
 [LibraryClasses.common.PEI_CORE]
-  SerialPortLib|ArmVirtPkg/Library/PatchedSerialPortLib16550/PatchedSerialPortLib16550.inf
-!if $(TARGET) != RELEASE
-  DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-!endif
 
 [LibraryClasses.common.PEIM]
-  SerialPortLib|ArmVirtPkg/Library/PatchedSerialPortLib16550/PatchedSerialPortLib16550.inf
-!if $(TARGET) != RELEASE
-  DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-!endif
 
 [LibraryClasses.common.DXE_DRIVER]
   AcpiPlatformLib|OvmfPkg/Library/AcpiPlatformLib/DxeAcpiPlatformLib.inf
   ReportStatusCodeLib|MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
 
 [LibraryClasses.common.DXE_RUNTIME_DRIVER]
-  SerialPortLib|ArmVirtPkg/Library/PatchedSerialPortLib16550/PatchedSerialPortLib16550.inf
-!if $(TARGET) != RELEASE
-  DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf
-!endif
 
 [LibraryClasses.common.UEFI_APPLICATION]
   PciPcdProducerLib|MdePkg/Library/BasePcdLibNull/BasePcdLibNull.inf
@@ -193,12 +167,9 @@
   gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x04000000
 
   #
-  # NS16550A UART @ 0x3F8
+  # ARM PL011 UART - discovered from device tree
   #
-  gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase|0x3f8
-  gEfiMdeModulePkgTokenSpaceGuid.PcdSerialUseMmio|TRUE
-  gEfiMdeModulePkgTokenSpaceGuid.PcdSerialPciDeviceInfo|{0xFF}
-  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate|38400
+  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate|115200
 
   ## Default Terminal Type
   ## 0-PCANSI, 1-VT100, 2-VT00+, 3-UTF8, 4-TTYTERM
@@ -264,7 +235,7 @@
   # Define a default initial address for the device tree.
   # Ignored if x0 != 0 at entry.
   #
-  gUefiOvmfPkgTokenSpaceGuid.PcdDeviceTreeInitialBaseAddress|0x40000000
+  gUefiOvmfPkgTokenSpaceGuid.PcdDeviceTreeInitialBaseAddress|0x80400000
 
   gArmTokenSpaceGuid.PcdFdBaseAddress|0x0
   gArmTokenSpaceGuid.PcdFvBaseAddress|0x0
