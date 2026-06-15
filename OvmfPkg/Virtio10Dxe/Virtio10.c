@@ -50,7 +50,6 @@ HasVirtio10Capability (
   Status = PciIo->Pci.Read (
                         PciIo,
                         EfiPciIoWidthUint8,
-                        0,
                         PCI_CAPBILITY_POINTER_OFFSET,
                         1,
                         &CapOffset
@@ -66,7 +65,6 @@ HasVirtio10Capability (
     Status = PciIo->Pci.Read (
                           PciIo,
                           EfiPciIoWidthUint8,
-                          0,
                           CapOffset,
                           1,
                           &CapId
@@ -79,7 +77,6 @@ HasVirtio10Capability (
       Status = PciIo->Pci.Read (
                             PciIo,
                             EfiPciIoWidthUint16,
-                            0,
                             CapOffset + 2,
                             1,
                             &VendorId
@@ -92,7 +89,6 @@ HasVirtio10Capability (
     Status = PciIo->Pci.Read (
                           PciIo,
                           EfiPciIoWidthUint8,
-                          0,
                           CapOffset + 1,
                           1,
                           &CapOffset

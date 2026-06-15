@@ -22,7 +22,7 @@
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
   FLASH_DEFINITION               = ArmVirtPkg/ArmVirtGzvm.fdf
-  POSTBUILD                      = if [ -f Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/EDK2-AARCH64-GZVM.fd ]; then mv -f Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/edk2-aarch64-gzvm.fd; fi && if [ -f Build/ArmVirtGzvm-AArch64/DEBUG_GCC5/FV/EDK2-AARCH64-GZVM.fd ]; then mv -f Build/ArmVirtGzvm-AArch64/DEBUG_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/DEBUG_GCC5/FV/edk2-aarch64-gzvm.fd; fi && if [ -f Build/ArmVirtGzvm-AArch64/NOOPT_GCC5/FV/EDK2-AARCH64-GZVM.fd ]; then mv -f Build/ArmVirtGzvm-AArch64/NOOPT_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/NOOPT_GCC5/FV/edk2-aarch64-gzvm.fd; fi
+  POSTBUILD                      = true
 
   #
   # Defines for default states.  These can be changed on the command line.

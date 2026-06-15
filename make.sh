@@ -40,3 +40,9 @@ GCC5_AARCH64_PREFIX="$TOOLCHAIN" build \
   -t GCC5 \
   -b "$BUILD_TARGET" \
   -p ArmVirtPkg/ArmVirtGzvm.dsc
+
+# Rename the FD file to the canonical lower-case form
+FD="Build/ArmVirtGzvm-AArch64/${BUILD_TARGET}_GCC5/FV/EDK2-AARCH64-GZVM.fd"
+if [ -f "$FD" ]; then
+  mv -f "$FD" "$(dirname "$FD")/edk2-aarch64-gzvm.fd"
+fi

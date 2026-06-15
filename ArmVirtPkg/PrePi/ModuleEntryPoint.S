@@ -357,7 +357,9 @@ ASM_PFX(DiscoverDramFromDt):
   //
   ldr   w10, [x28, #4]         // FDT totalsize (be32)
   rev   w10, w10
-  cmp   w10, #0x1FFC0
+  mov   w11, #0xFFC0
+  movk  w11, #0x1, lsl #16
+  cmp   w10, w11
   b.ls  20f                    // DTB fits — proceed
   //
   // DTB too large for the reserved slot — this is fatal.  Print an error
