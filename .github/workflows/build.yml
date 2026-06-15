@@ -20,6 +20,7 @@ jobs:
         fetch-depth: 1
     - name: 编译
       run: |
+        mkdir -p Conf
         make -C BaseTools && . edksetup.sh && GCC5_AARCH64_PREFIX=aarch64-linux-gnu- build -a AARCH64 -t GCC5 -b RELEASE -p ArmVirtPkg/ArmVirtGzvm.dsc
     - name: 上传
       uses: actions/upload-artifact@v7
