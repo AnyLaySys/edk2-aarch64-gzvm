@@ -12,16 +12,20 @@ jobs:
     - name: 部署
       run: |
         sudo apt update
-        sudo apt install -y build-essential uuid-dev gcc-aarch64-linux-gnu acpica-tools
+        sudo apt install -y acpica-tools build-essential gcc-aarch64-linux-gnu uuid-dev
     - name: 拉取
       uses: actions/checkout@v6
       with:
-        submodules: recursive
+        fetch-tags: false
         fetch-depth: 1
+        filter: blob:none
+        show-progress: false
+        submodules: recursive
     - name: 编译
       run: |
         mkdir -p Conf
         make -C BaseTools && . edksetup.sh && GCC5_AARCH64_PREFIX=aarch64-linux-gnu- build -a AARCH64 -t GCC5 -b RELEASE -p ArmVirtPkg/ArmVirtGzvm.dsc
+        cp Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/EDK2-AARCH64-GZVM.fd Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/edk2-aarch64-gzvm.fd
     - name: 上传
       uses: actions/upload-artifact@v7
       with:
