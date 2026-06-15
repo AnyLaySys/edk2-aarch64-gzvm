@@ -1,5 +1,8 @@
 .DS_Store
 *.pyc
+# Build logs (numeric single files, not dirs like 16550)
+[0-9]
+
 BaseTools/Source/C/bin/
 BaseTools/Source/C/libs/
 Build/
@@ -9,6 +12,3 @@ __pycache__/
 tags/
 .venv/
 .vscode/
-
-# Build logs (numeric single files, not dirs like 16550)
-[0-9]
