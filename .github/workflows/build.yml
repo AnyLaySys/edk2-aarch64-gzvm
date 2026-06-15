@@ -1,0 +1,27 @@
+name: edk2-aarch64-gzvm 构建
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 部署
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-aarch64-linux-gnu
+    - name: 拉取
+      uses: actions/checkout@v6
+    - name: 编译
+      run: |
+        make -C BaseTools && . edksetup.sh && GCC5_AARCH64_PREFIX=aarch64-linux-gnu- build -a AARCH64 -t GCC5 -b RELEASE -p ArmVirtPkg/ArmVirtGzvm.dsc
+    - name: 上传
+      uses: actions/upload-artifact@v7
+      with:
+        name: edk2-aarch64-gzvm.fd
+        path: Build/ArmVirtGzvm-AArch64/RELEASE_GCC5/FV/edk2-aarch64-gzvm.fd
+        archive: false
+        if-no-files-found: error
