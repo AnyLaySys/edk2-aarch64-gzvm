@@ -355,8 +355,6 @@ ASM_PFX(DiscoverDramFromDt):
   // for the header + DTB region (0x00000000-0x0001FFFF), of which 0x40 bytes
   // are the Linux kernel header, leaving 0x1FFC0 for the DTB.
   //
-  ldr   w9, [x28]              // FDT header begins with big-endian size (be32)
-  rev   w9, w9                 // convert to LE
   ldr   w10, [x28, #4]         // FDT totalsize (be32)
   rev   w10, w10
   cmp   w10, #0x1FFC0
