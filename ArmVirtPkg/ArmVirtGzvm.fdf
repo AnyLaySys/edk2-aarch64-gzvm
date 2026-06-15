@@ -22,10 +22,12 @@
 
 [Defines]
 !if $(FD_SIZE_IN_MB) == 2
-  DEFINE FVMAIN_COMPACT_SIZE  = 0x1f8000
+  # FD = 2MB = 0x200000; DTB header = 0x20000; FVMAIN_COMPACT = 0x200000 - 0x20000
+  DEFINE FVMAIN_COMPACT_SIZE  = 0x1e0000
 !endif
 !if $(FD_SIZE_IN_MB) == 3
-  DEFINE FVMAIN_COMPACT_SIZE  = 0x2f8000
+  # FD = 3MB = 0x300000; DTB header = 0x20000; FVMAIN_COMPACT = 0x300000 - 0x20000
+  DEFINE FVMAIN_COMPACT_SIZE  = 0x2e0000
 !endif
 
 [FD.edk2-aarch64-gzvm]
@@ -62,7 +64,7 @@ NumBlocks     = $(FD_NUM_BLOCKS)
 0x00000000|0x00020000
 DATA = {
   0x01, 0x00, 0x00, 0x10,                         # code0: adr x1, .
-  0xff, 0x1f, 0x00, 0x14,                         # code1: b 0x8000
+  0xff, 0x7f, 0x00, 0x14,                         # code1: b 0x20000
   0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, # text_offset: 512 KB
 !if $(FD_SIZE_IN_MB) == 2
   0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, # image_size: 2 MB
