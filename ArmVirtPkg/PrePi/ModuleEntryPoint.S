@@ -350,13 +350,80 @@ ASM_PFX(DiscoverDramFromDt):
   //
   adr   x8, PcdGet64 (PcdDeviceTreeInitialBaseAddress)
   add   x27, x27, #0x40        // dest = FD base + 0x40 (after header)
-  //
-  // Total DTB size (from FDT header at x28); the FDF allocates 0x100000 bytes
-  // for the header + DTB region (0x00000000-0x000FFFFF), of which 0x40 bytes
-  // are the Linux kernel header, leaving 0xFFFFC0 for the DTB.
-  //
   ldr   w10, [x28, #4]         // FDT totalsize (be32)
   rev   w10, w10
+  //
+  // Print DTB size as hex for diagnostics
+  //
+  mov   w16, #'s'
+  str   w16, [x15]
+  mov   w16, #'='
+  str   w16, [x15]
+  mov   x17, x10
+  lsr   x17, x17, #28
+  and   w16, w17, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  11f
+  add   w16, w16, #('A'-'0'-10)
+ 11:str w16, [x15]
+  mov   x17, x10
+  lsr   x17, x17, #24
+  and   w16, w17, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  12f
+  add   w16, w16, #('A'-'0'-10)
+ 12:str w16, [x15]
+  mov   x17, x10
+  lsr   x17, x17, #20
+  and   w16, w17, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  13f
+  add   w16, w16, #('A'-'0'-10)
+ 13:str w16, [x15]
+  mov   x17, x10
+  lsr   x17, x17, #16
+  and   w16, w17, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  14f
+  add   w16, w16, #('A'-'0'-10)
+ 14:str w16, [x15]
+  mov   x17, x10
+  lsr   x17, x17, #12
+  and   w16, w17, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  15f
+  add   w16, w16, #('A'-'0'-10)
+ 15:str w16, [x15]
+  mov   x17, x10
+  lsr   x17, x17, #8
+  and   w16, w17, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  16f
+  add   w16, w16, #('A'-'0'-10)
+ 16:str w16, [x15]
+  mov   x17, x10
+  lsr   x17, x17, #4
+  and   w16, w17, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  17f
+  add   w16, w16, #('A'-'0'-10)
+ 17:str w16, [x15]
+  and   w16, w10, #0xF
+  add   w16, w16, #'0'
+  cmp   w16, #('9'+1)
+  b.lt  18f
+  add   w16, w16, #('A'-'0'-10)
+ 18:str w16, [x15]
+  mov   w16, #' '
+  str   w16, [x15]
+
   mov   w11, #0xFFC0
   movk  w11, #0xFF, lsl #16
   cmp   w10, w11
