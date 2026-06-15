@@ -3,7 +3,7 @@
 BaseTools/Source/C/bin/
 BaseTools/Source/C/libs/
 Build/
-Conf/
+/Conf/
 *_extdep/
 __pycache__/
 tags/
