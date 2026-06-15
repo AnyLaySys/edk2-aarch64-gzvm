@@ -15,10 +15,9 @@ jobs:
         sudo apt install -y build-essential uuid-dev gcc-aarch64-linux-gnu
     - name: 拉取
       uses: actions/checkout@v6
-      run: |
-        git submodule update --init --recursive --single-branch --depth 1 --progress
     - name: 编译
       run: |
+        git submodule update --init --recursive --single-branch --depth 1 --progress
         make -C BaseTools && . edksetup.sh && GCC5_AARCH64_PREFIX=aarch64-linux-gnu- build -a AARCH64 -t GCC5 -b RELEASE -p ArmVirtPkg/ArmVirtGzvm.dsc
     - name: 上传
       uses: actions/upload-artifact@v7
