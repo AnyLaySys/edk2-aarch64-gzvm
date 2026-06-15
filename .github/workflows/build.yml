@@ -12,7 +12,7 @@ jobs:
     - name: 部署
       run: |
         sudo apt update
-        sudo apt install -y build-essential uuid-dev gcc-aarch64-linux-gnu
+        sudo apt install -y build-essential uuid-dev gcc-aarch64-linux-gnu acpica-tools
     - name: 拉取
       uses: actions/checkout@v6
       with:
